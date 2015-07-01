@@ -9,7 +9,8 @@
 
   var Pin = scope.Pin,
     Module = scope.Module,
-    proto;
+    proto,
+    blinkTimer = undefined;
 
   function Led(board, pin, driveMode) {
     Module.call(this);
@@ -93,6 +94,20 @@
     this._pin.value = 1 - this._pin.value;
     if (typeof callback === 'function') {
       checkPinState(this, this._pin, this._pin.value, callback);
+    }
+  };
+
+  proto.blink = function (callback) {
+    this.stopBlink();
+    var intTimer = parseInt(callback);
+    blinkTimer = window.setInterval(function(){
+      this.led.toggle();
+    }, (isNaN(intTimer) || intTimer <= 0) ? 1000 : parseInt(callback));
+  };
+
+  proto.stopBlink = function () {
+    if (blinkTimer !== undefined) {
+      window.clearInterval(blinkTimer);
     }
   };
 

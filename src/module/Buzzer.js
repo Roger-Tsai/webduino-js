@@ -9,7 +9,11 @@
 
   var util = scope.util,
     Module = scope.Module,
-    proto;
+    proto,
+    TimeoutArray = [],
+    TimerIndex = 0,
+    Notes = [],
+    Tempos = [];
 
   var BUZZER_MESSAGE = [0x04, 0x07],
     TONE_MIN_LENGTH = 100;
@@ -134,7 +138,7 @@
     }
   });
 
-  proto.tone = function (freq, duration) {
+  proto.tone = function (freq, duration, index) {
     var freqData = [];
 
     if (isNaN(freq = parseInt(freq)) || freq <= 0 || freq > 9999) {
@@ -147,9 +151,10 @@
     duration = Math.round(getDuration(duration) / TONE_MIN_LENGTH);
     this._board.sendSysex(BUZZER_MESSAGE[0], [BUZZER_MESSAGE[1], this._pin.number]
       .concat(freqData).concat(duration));
+    TimerIndex = index;
   };
 
-  proto.play = function (notes, tempos) {
+  /*proto.play = function (notes, tempos) {
     var self = this,
       len = notes.length,
       durations = (util.isArray(tempos) ? tempos : []).map(function (t) {
@@ -163,6 +168,47 @@
         };
       }(i)), calculateDelay(i, durations));
     }
+  };*/
+
+  proto.play = function (notes, tempos) {
+    this.stop();
+    Notes = notes;
+    Tempos = tempos;
+
+    var self = this,
+        len = notes.length,
+        durations = (util.isArray(tempos) ? tempos : []).map(function (t) {
+          return 1000 / t;
+        });
+
+    for (var i = 0; i < len; i++) {
+      TimeoutArray.push(setTimeout((function (d) {
+        return function () {
+          self.tone(FREQUENCY[notes[d].toUpperCase()], durations[d], d);
+        };
+      }(i)), calculateDelay(i, durations)));
+    }
+  };
+
+  proto.pause = function() {
+    for (var i = TimerIndex; i < TimeoutArray.length; i++) {
+      clearTimeout(TimeoutArray[i]);
+    }
+  };
+
+  proto.resume = function() {
+    this.play(Notes.slice(TimerIndex, TimeoutArray.length-1), Tempos.slice(TimerIndex, TimeoutArray.length-1));
+  };
+
+  proto.stop = function() {
+    for (var i = TimerIndex; i < TimeoutArray.length; i++) {
+      clearTimeout(TimeoutArray[i]);
+    }
+    //quick reset of the timer array you just cleared
+    TimeoutArray = [];
+    Notes = [];
+    Tempos = [];
+    TimerIndex = 0;
   };
 
   Buzzer.FREQUENCY = FREQUENCY;
