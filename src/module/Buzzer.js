@@ -154,7 +154,7 @@
     TimerIndex = index;
   };
 
-  /*proto.play = function (notes, tempos) {
+  proto.oplay = function (notes, tempos) {
     var self = this,
       len = notes.length,
       durations = (util.isArray(tempos) ? tempos : []).map(function (t) {
@@ -168,7 +168,7 @@
         };
       }(i)), calculateDelay(i, durations));
     }
-  };*/
+  };
 
   proto.play = function (notes, tempos) {
     this.stop();
