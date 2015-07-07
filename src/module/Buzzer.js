@@ -237,6 +237,10 @@
     this._state = BUZZER_STATE.STOPPED;
   };
 
+  proto.state = function () {
+    return this._state;
+  };
+
   Buzzer.FREQUENCY = FREQUENCY;
 
   Buzzer.TONE_DELAY = 60;

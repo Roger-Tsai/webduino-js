@@ -9,8 +9,12 @@
 
   var Pin = scope.Pin,
     Module = scope.Module,
-    proto,
-    blinkTimer = undefined;
+    proto;
+
+  var LED_STATE = {
+    off: 'off',
+    on: 'on'
+  };
 
   function Led(board, pin, driveMode) {
     Module.call(this);
@@ -19,6 +23,8 @@
     this._pin = pin;
     this._driveMode = driveMode || Led.SOURCE_DRIVE;
     this._supportsPWM = undefined;
+    this._blinkTimer = null;
+    this._state = LED_STATE.off;
 
     if (this._driveMode === Led.SOURCE_DRIVE) {
       this._onValue = 1;
@@ -78,6 +84,7 @@
 
   proto.on = function (callback) {
     this._pin.value = this._onValue;
+    this._state = LED_STATE.on;
     if (typeof callback === 'function') {
       checkPinState(this, this._pin, this._pin.value, callback);
     }
@@ -85,6 +92,7 @@
 
   proto.off = function (callback) {
     this._pin.value = this._offValue;
+    this._state = LED_STATE.off;
     if (typeof callback === 'function') {
       checkPinState(this, this._pin, this._pin.value, callback);
     }
@@ -92,6 +100,13 @@
 
   proto.toggle = function (callback) {
     this._pin.value = 1 - this._pin.value;
+
+    if (this._pin.value === 0) {
+      this._state = LED_STATE.off;
+    } else {
+      this._state = LED_STATE.on;
+    }
+
     if (typeof callback === 'function') {
       checkPinState(this, this._pin, this._pin.value, callback);
     }
@@ -100,15 +115,19 @@
   proto.blink = function (callback) {
     this.stopBlink();
     var intTimer = parseInt(callback);
-    blinkTimer = window.setInterval(function(){
+    this._blinkTimer = window.setInterval(function(){
       this.led.toggle();
     }, (isNaN(intTimer) || intTimer <= 0) ? 1000 : parseInt(callback));
   };
 
   proto.stopBlink = function () {
-    if (blinkTimer !== undefined) {
-      window.clearInterval(blinkTimer);
+    if (this._blinkTimer !== undefined) {
+      window.clearInterval(this._blinkTimer);
     }
+  };
+
+  proto.state = function () {
+    return this._state;
   };
 
   Led.SOURCE_DRIVE = 0;
