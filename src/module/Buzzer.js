@@ -130,7 +130,11 @@
 
   function padDurations(durations, len) {
     var durLen = durations.length,
+<<<<<<< HEAD
         dur = durLen ? durations[durLen - 1] : TONE_MIN_LENGTH;
+=======
+      dur = durLen ? durations[durLen - 1] : TONE_MIN_LENGTH;
+>>>>>>> upstream/master
 
     if (durLen < len) {
       durations = durations.concat(new Array(len - durLen));
@@ -144,7 +148,11 @@
 
   function playNext(self) {
     var seq = self._sequence,
+<<<<<<< HEAD
     note;
+=======
+      note;
+>>>>>>> upstream/master
 
     if (seq && seq.length > 0) {
       note = seq.pop();
@@ -181,11 +189,19 @@
   proto.play = function (notes, tempos) {
     if (typeof notes !== 'undefined') {
       var len = notes.length,
+<<<<<<< HEAD
       durations = padDurations(
         (util.isArray(tempos) ? tempos : []).map(function (t) {
           return getDuration(1000 / t);
         }), len
       );
+=======
+        durations = padDurations(
+          (util.isArray(tempos) ? tempos : []).map(function (t) {
+            return getDuration(1000 / t);
+          }), len
+        );
+>>>>>>> upstream/master
 
       this.stop();
       this._sequence = [];
@@ -218,6 +234,7 @@
     this._state = BUZZER_STATE.PAUSED;
   };
 
+<<<<<<< HEAD
   proto.resume = function() {
     if (this._state !== BUZZER_STATE.PAUSED) {
       return;
@@ -227,6 +244,8 @@
     playNext(this);
   };
 
+=======
+>>>>>>> upstream/master
   proto.stop = function () {
     if (this._timer) {
       clearTimeout(this._timer);
@@ -235,10 +254,13 @@
 
     delete this._sequence;
     this._state = BUZZER_STATE.STOPPED;
+<<<<<<< HEAD
   };
 
   proto.state = function () {
     return this._state;
+=======
+>>>>>>> upstream/master
   };
 
   Buzzer.FREQUENCY = FREQUENCY;
