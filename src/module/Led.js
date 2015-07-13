@@ -13,7 +13,8 @@
 
   var LED_STATE = {
     off: 'off',
-    on: 'on'
+    on: 'on',
+    blink: 'blink'
   };
 
   function Led(board, pin, driveMode) {
@@ -25,6 +26,7 @@
     this._supportsPWM = undefined;
     this._blinkTimer = null;
     this._state = LED_STATE.off;
+    this._millisec = 1000;
 
     if (this._driveMode === Led.SOURCE_DRIVE) {
       this._onValue = 1;
@@ -83,6 +85,10 @@
   });
 
   proto.on = function (callback) {
+    if (this._state === LED_STATE.blink) {
+      this.stopBlink();
+    }
+
     this._pin.value = this._onValue;
     this._state = LED_STATE.on;
     if (typeof callback === 'function') {
@@ -91,6 +97,10 @@
   };
 
   proto.off = function (callback) {
+    if (this._state === LED_STATE.blink) {
+      this.stopBlink();
+    }
+
     this._pin.value = this._offValue;
     this._state = LED_STATE.off;
     if (typeof callback === 'function') {
@@ -99,6 +109,14 @@
   };
 
   proto.toggle = function (callback) {
+
+    if (this._state === LED_STATE.blink) {
+      this.stopBlink();
+      this._pin.value = this._offValue;
+      this._state = LED_STATE.off;
+      return;
+    }
+
     this._pin.value = 1 - this._pin.value;
 
     if (this._pin.value === 0) {
@@ -112,21 +130,34 @@
     }
   };
 
-  proto.blink = function (callback) {
+  proto.blink = function (ms, callback) {
     this.stopBlink();
-    var intTimer = parseInt(callback);
-    this._blinkTimer = window.setInterval(function(){
-      this.led.toggle();
-    }, (isNaN(intTimer) || intTimer <= 0) ? 1000 : parseInt(callback));
+    this._state = LED_STATE.blink;
+    var intMS = parseInt(ms);
+    this._millisec = (isNaN(intMS) || intMS <= 0) ? 1000 : intMS;
+
+    if (typeof callback === 'function') {
+      checkPinState(this, this._pin, this._pin.value, callback);
+    }
+
+    blinkNext(this);
   };
 
+  function blinkNext(self) {
+    self._pin.value = 1 - self._pin.value;
+    self._blinkTimer = setTimeout(function () {
+      blinkNext(self);
+    }, self._millisec);
+  }
+
   proto.stopBlink = function () {
-    if (this._blinkTimer !== undefined) {
-      window.clearInterval(this._blinkTimer);
+    if (this._blinkTimer !== null) {
+      clearTimeout(this._blinkTimer);
+      this._blinkTimer = null;
     }
   };
 
-  proto.state = function () {
+  proto.getState = function () {
     return this._state;
   };
 
