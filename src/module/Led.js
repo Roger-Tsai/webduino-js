@@ -11,12 +11,6 @@
     Module = scope.Module,
     proto;
 
-  var LED_STATE = {
-    off: 'off',
-    on: 'on',
-    blink: 'blink'
-  };
-
   function Led(board, pin, driveMode) {
     Module.call(this);
 
@@ -25,7 +19,7 @@
     this._driveMode = driveMode || Led.SOURCE_DRIVE;
     this._supportsPWM = undefined;
     this._blinkTimer = null;
-    this._state = LED_STATE.off;
+    this._state = this.LED_STATE.off;
     this._millisec = null;
 
     if (this._driveMode === Led.SOURCE_DRIVE) {
@@ -85,12 +79,12 @@
   });
 
   proto.on = function (callback) {
-    if (this._state === LED_STATE.blink) {
+    if (this._state === this.LED_STATE.blink) {
       this.stopBlink();
     }
 
     this._pin.value = this._onValue;
-    this._state = LED_STATE.on;
+    this._state = this.LED_STATE.on;
 
     if (typeof callback === 'function') {
       checkPinState(this, this._pin, this._pin.value, callback);
@@ -98,12 +92,12 @@
   };
 
   proto.off = function (callback) {
-    if (this._state === LED_STATE.blink) {
+    if (this._state === this.LED_STATE.blink) {
       this.stopBlink();
     }
 
     this._pin.value = this._offValue;
-    this._state = LED_STATE.off;
+    this._state = this.LED_STATE.off;
 
     if (typeof callback === 'function') {
       checkPinState(this, this._pin, this._pin.value, callback);
@@ -112,7 +106,7 @@
 
   proto.toggle = function (callback) {
 
-    if (this._state === LED_STATE.blink) {
+    if (this._state === this.LED_STATE.blink) {
       this.stopBlink();
       return;
     }
@@ -120,9 +114,9 @@
     this._pin.value = 1 - this._pin.value;
 
     if (this._pin.value === 0) {
-      this._state = LED_STATE.off;
+      this._state = this.LED_STATE.off;
     } else {
-      this._state = LED_STATE.on;
+      this._state = this.LED_STATE.on;
     }
 
     if (typeof callback === 'function') {
@@ -132,7 +126,7 @@
 
   proto.blink = function (ms, callback) {
     this.stopBlink();
-    this._state = LED_STATE.blink;
+    this._state = this.LED_STATE.blink;
     var intMS = parseInt(ms);
     this._millisec = (isNaN(intMS) || intMS <= 0) ? 1000 : intMS;
 
@@ -155,7 +149,7 @@
       clearTimeout(this._blinkTimer);
       this._blinkTimer = null;
       this._millisec = null;
-      this._state = LED_STATE.off;
+      this._state = this.LED_STATE.off;
       this.off();
     }
   };
@@ -171,6 +165,12 @@
 
   proto.getInterval = function () {
     return this._millisec;
+  };
+
+  proto.LED_STATE = {
+    off: 'off',
+    on: 'on',
+    blink: 'blink'
   };
 
   Led.SOURCE_DRIVE = 0;
