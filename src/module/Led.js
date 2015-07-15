@@ -26,7 +26,7 @@
     this._supportsPWM = undefined;
     this._blinkTimer = null;
     this._state = LED_STATE.off;
-    this._millisec = 1000;
+    this._millisec = null;
 
     if (this._driveMode === Led.SOURCE_DRIVE) {
       this._onValue = 1;
@@ -91,6 +91,7 @@
 
     this._pin.value = this._onValue;
     this._state = LED_STATE.on;
+
     if (typeof callback === 'function') {
       checkPinState(this, this._pin, this._pin.value, callback);
     }
@@ -103,6 +104,7 @@
 
     this._pin.value = this._offValue;
     this._state = LED_STATE.off;
+
     if (typeof callback === 'function') {
       checkPinState(this, this._pin, this._pin.value, callback);
     }
@@ -112,8 +114,6 @@
 
     if (this._state === LED_STATE.blink) {
       this.stopBlink();
-      this._pin.value = this._offValue;
-      this._state = LED_STATE.off;
       return;
     }
 
@@ -154,11 +154,23 @@
     if (this._blinkTimer !== null) {
       clearTimeout(this._blinkTimer);
       this._blinkTimer = null;
+      this._millisec = null;
+      this._state = LED_STATE.off;
+      this.off();
     }
   };
 
   proto.getState = function () {
     return this._state;
+  };
+
+  proto.setInterval = function (ms) {
+    var intMS = parseInt(ms);
+    this._millisec = (isNaN(intMS) || intMS <= 0) ? 1000 : intMS;
+  };
+
+  proto.getInterval = function () {
+    return this._millisec;
   };
 
   Led.SOURCE_DRIVE = 0;
